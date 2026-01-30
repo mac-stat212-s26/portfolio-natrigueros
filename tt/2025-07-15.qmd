@@ -11,13 +11,13 @@ Provide sufficient background for readers to grasp your narrative.
 
 ### Research Question
 
-This week's TidyTuesday brings insights into Brazil's companies, brought together by Marcelo Silva from Brazil's open CNPJ and the Brazilian Ministry of Finance.
+This week's TidyTuesday brings insights into Brazil's companies, curated by Marcelo Silva with data from Brazil's open CNPJ and the Brazilian Ministry of Finance.
 For the assignment's purposes, I will focus on the following research question: What distinguishes Brazil's highest-capitalized companies from typical firms, and how do legal structure, ownership type, and formal size classifications shape access to significant capital?
 
 ### Data Import
 
 ```{r}
-install.packages("tidytuesdayR")
+install.packages("tidytuesdayR", repos = "https://cloud.r-project.org/")
 tuesdata <- tidytuesdayR::tt_load('2026-01-27')
 library(tidyverse)
 library(dplyr)
@@ -96,8 +96,7 @@ ggplot(owner_comparison, aes(x = reorder(owner_qualification, percent), y = perc
 
 Who controls the capital in Brazilian business?
 
-Brazil's CNPJ registry tracks millions of companies, including their capital stock (declared share capital).
-By examining the "capital elite" (top 10% by capital stock, above R\$3930456), we can understand who controls significant financial resources in Latin America's largest economy.
+Brazil's CNPJ registry tracks millions of companies, including their capital stock (declared share capital). We can understand who controls significant financial resources in Latin America's largest economy. By examining the "capital elite" (top 10% by capital stock, above R\$3930456).
 
 Does size matter for these businesses?
 
@@ -113,11 +112,10 @@ While Managing Partners control 79% of typical Brazilian firms, elite companies 
 Administrators and Managers lead 30.5% of elite companies but only 8.7% of typical firms.
 Directors, Officers, and Presidents are also far more common at the top, suggesting that high-capital firms adopt more formalized corporate governance structures rather than the partnership model that dominates smaller enterprises.
 
-So what does that mean?
+So, what does that mean?
 
 Access to capital in Brazil isn't just about business ideas.
 It's about structure.
 Formal size classifications may misdirect policy support, while legal form and ownership type systematically advantage certain organizational arrangements.
 For entrepreneurs seeking investment, these aren't just administrative choices.
 They're strategic decisions with real consequences for accessing the capital that fuels growth.
-In Brazil's business landscape, structure and ownership play a bigger role than size.
