@@ -100,7 +100,7 @@ Brazil's CNPJ registry tracks millions of companies, including their capital sto
 We can understand who controls significant financial resources in Latin America's largest economy.
 By examining the "capital elite" (top 10% by capital stock, above R\$3930456).
 
-Does size matter for these businesses?
+Does the size of businesses matter?
 
 Our first visualization shows an interesting pattern: formal size classifications are nearly meaningless.
 Companies labeled "micro-enterprises" can have capital stock exceeding R\$1 billion, often more than many "small-enterprises." The elite threshold (red line) cuts across all size categories, showing that Brazil's administrative labels don't reflect economic reality.
