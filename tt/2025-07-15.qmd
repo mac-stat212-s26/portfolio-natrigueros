@@ -1,5 +1,122 @@
 ---
-title: "TidyTuesday Sample 2"
+title: "Homework 01"
+author: "Nayla Trigueros Ortiz"
 ---
 
-Add content here
+## TidyTuesday Section
+
+Explore the week's [TidyTuesday](https://github.com/rfordatascience/tidytuesday) challenge.
+Develop a research question, then answer it through a short data story with [effective visualization(s)]({{< var effective-viz-url >}}).
+Provide sufficient background for readers to grasp your narrative.
+
+### Research Question
+
+This week's TidyTuesday brings insights into Brazil's companies, curated by Marcelo Silva with data from Brazil's open CNPJ and the Brazilian Ministry of Finance.
+For the assignment's purposes, I will focus on the following research question: **What distinguishes Brazil's highest-capitalized companies from typical firms, and how do legal structure, ownership type, and formal size classifications shape access to significant capital?**
+
+### Data Import
+
+```{r}
+install.packages("tidytuesdayR", repos = "https://cloud.r-project.org/")
+tuesdata <- tidytuesdayR::tt_load('2026-01-27')
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+companies <- tuesdata$companies
+legal_nature <- tuesdata$legal_nature
+qualifications <- tuesdata$qualifications
+size <- tuesdata$size
+```
+
+### Visualizations
+
+```{r fig.width= 12, fig.height= 8}
+# Data wrangling
+companies_clean <- companies %>%
+  filter(!is.na(capital_stock), !is.na(company_size), capital_stock > 0) %>%
+  mutate(
+    elite_threshold = quantile(capital_stock, 0.90),
+    is_elite = capital_stock >= elite_threshold
+  ) %>%
+  
+  # Get top 5 legal natures
+  add_count(legal_nature, name = "legal_count") %>%
+  mutate(legal_simple = if_else(
+    legal_count >= sort(unique(legal_count), decreasing = TRUE)[5],
+    legal_nature,
+    "Other"
+  ))
+
+ggplot(companies_clean, aes(x = company_size, y = capital_stock, color = legal_simple)) +
+  geom_jitter(alpha = 0.5, width = 0.2) +
+  geom_hline(aes(yintercept = elite_threshold), linetype = "dashed", color = "red", size = 1) +
+  scale_y_log10() +
+  labs(
+    title = "Capital Stock Across Company Sizes",
+    subtitle = "Red line marks the top 10% threshold",
+    x = "Company Size",
+    y = "Capital Stock (BRL, log scale)",
+    color = "Legal Nature"
+  ) +
+  scale_color_viridis_d() +
+  theme_minimal()
+
+# Data wrangling
+owner_comparison <- companies %>%
+  filter(!is.na(owner_qualification), !is.na(capital_stock), capital_stock > 0) %>%
+  mutate(
+    elite_threshold = quantile(capital_stock, 0.90),
+    is_elite = if_else(capital_stock >= elite_threshold, "Elite (Top 10%)", "Other Companies")
+  ) %>%
+  
+  # Get top 5 owner qualifications
+  add_count(owner_qualification, name = "owner_count") %>%
+  filter(owner_count >= sort(unique(owner_count), decreasing = TRUE)[5]) %>%
+  group_by(owner_qualification, is_elite) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(is_elite) %>%
+  mutate(percent = count / sum(count) * 100)
+
+ggplot(owner_comparison, aes(x = reorder(owner_qualification, percent), y = percent, fill = is_elite)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(
+    title = "Who Controls the Capital?",
+    subtitle = "Owner qualification patterns in elite vs. typical Brazilian companies",
+    x = "Owner Qualification",
+    y = "Percentage (%)",
+    fill = "Company Type"
+  ) +
+  scale_fill_viridis_d() +
+  theme_minimal()
+```
+
+### Summary of Findings
+
+Who controls the capital in Brazilian business?
+
+Brazil's CNPJ registry tracks millions of companies, including their capital stock (declared share capital).
+We can understand who controls significant financial resources in Latin America's largest economy.
+By examining the "capital elite" (top 10% by capital stock, above R\$3930456).
+
+Does the size of businesses matter?
+
+Our first visualization shows an interesting pattern: formal size classifications are nearly meaningless.
+Companies labeled "micro-enterprises" can have capital stock exceeding R\$1 billion, often more than many "small-enterprises." The elite threshold (red line) cuts across all size categories, showing that Brazil's administrative labels don't reflect economic reality.
+
+However, Legal structure does matter.
+Limited Liability Business Companies dominate the high-capital tier, suggesting certain legal forms provide better access to serious investment.
+
+What about ownership?
+
+While Managing Partners control 79% of typical Brazilian firms, elite companies show much greater diversity in leadership.
+Administrators and Managers lead 30.5% of elite companies but only 8.7% of typical firms.
+Directors, Officers, and Presidents are also far more common at the top, suggesting that high-capital firms adopt more formalized corporate governance structures rather than the partnership model that dominates smaller enterprises.
+
+So, what does that mean?
+
+Access to capital in Brazil is based in a foundation of structure.
+Formal size classifications may misdirect policy support, while legal form and ownership type systematically advantage certain organizational arrangements.
+For entrepreneurs seeking investment, these aren't just administrative choices.
+They're strategic decisions with real consequences for accessing the capital that fuels growth.
