@@ -63,13 +63,16 @@ Examine the [NYTimes 2015 Temperature Visualization (html)](https://www.nytimes.
 
 - Relate the intro paragraph: "Scientists declared that 2015 was Earth’s hottest year on record..." to the *design* of the visualization.  In particular, based on the intro paragraph,
   - What key message/claim does NYTimes want readers to be able to explore? 
+    The idea that temperature records have started going off and above the standard norm.
   - How did this goal inform what information is displayed in the visualization?
+    Being able to see different cities allows for people to understand this as not only a global but also local issue.The different layers are able to represent this information making it digestible for the audience.
 
 **Aesthetic Mapping** 
 
 - What specific variables (from the data codebook) underlie the visualization?
+  dateInYear, RecordLow, RecordHigh, NormalLow, NormalHigh, Low, High
 - How do these variables map to aesthetics of the visual elements, eg, position, size, shape, and color of glyphs?
-
+  dateInYear is the x axis, the variants of the recorded and actual temperatures are the y-axis with the layers and shading. Record breaking temps highlighted with the triangle.
 
 
 
@@ -124,6 +127,7 @@ Look at the [`geom_linerange` documentation page](https://ggplot2.tidyverse.org/
 
 ```{r weather_plot_temp_records}
 ggplot(weather) +
+  geom_linerange(aes(x= dateInYear, ymin = RecordLow, ymax = RecordHigh), color = "#ECEBE3") + 
     theme_classic()
 ```
 
@@ -146,7 +150,27 @@ In your visualization, also display the usual temperatures (`NormalLow` and `Nor
 ![SFO observed, Average, and Record Daily Temperatures in 2011](https://hash-mac.github.io/stat212site-sp26/images/sfo_second_graph.png)
 
 ```{r weather_plot_temp_all}
+# Wrangling
+record_days <- weather |>
+  filter(High == RecordHigh) |>        
+  slice_max(RecordHigh, n = 5)
 
+
+month_names <- weather |> 
+  group_by(Month) |> 
+  summarize(middle_d = median(dateInYear))
+
+# Temperature plot
+
+temp_plot <- ggplot(weather) +
+  
+  geom_ribbon(aes(x= dateInYear, ymin = RecordLow, ymax = RecordHigh), fill = "#ECEBE3") + 
+  geom_ribbon(aes(x= dateInYear, ymin = NormalLow, ymax = NormalHigh), fill = "#C8B8BA") + 
+  geom_linerange(aes(x= dateInYear, ymin = Low, ymax = High), color = "#A90248") + 
+  theme_classic() +
+  theme(plot.title = element_text(face = "bold", size = 10))
+
+temp_plot
 
 ```
 
@@ -161,7 +185,32 @@ If you'd like finer control of the width of these lines/rectangles, check out th
 Recreate the visual demarcations of the months by adding vertical lines separating the months.  Brainstorm how we might draw those vertical lines. What `geom` might we use?  What subset of the data might we use in that `geom` layer to draw lines only at the month divisions? 
 
 ```{r }
+month_lines <- weather |> 
+  filter(Day == 1)
 
+record_days <- weather |>
+  filter(High == RecordHigh) |>        
+  slice_max(RecordHigh, n = 5)
+
+
+month_names <- weather |> 
+  group_by(Month) |> 
+  summarize(middle_d = median(dateInYear))
+
+temp_plot <- ggplot(weather) +
+  
+  geom_ribbon(aes(x= dateInYear, ymin = RecordLow, ymax = RecordHigh), fill = "#ECEBE3") + 
+  geom_vline(data = month_lines, aes(xintercept = dateInYear), color = "GRAY", linetype = "dotted", size = 0.1) +
+  geom_ribbon(aes(x= dateInYear, ymin = NormalLow, ymax = NormalHigh), fill = "#C8B8BA") + 
+  geom_linerange(aes(x= dateInYear, ymin = Low, ymax = High), color = "#A90248") + 
+  
+  scale_y_continuous(breaks = c(0, 40, 80, 120)) +
+  labs(title = "Temperature", x = NULL, y = NULL) +
+  
+  theme_classic() +
+  theme(plot.title = element_text(face = "bold", size = 10))
+
+temp_plot
 
 ```
 
@@ -181,6 +230,38 @@ Try to figuring out this new challenge using search engines and LLMs:
 - **Search Engines.** Use Google to search for possible solutions using the jargon that is most likely to return the most relevant results. Record search queries and your thought process in selecting which search results to look at first.
 
 - **LLMs.** Use [ChatGPT](https://chat.openai.com/) or [Gemini](https://gemini.google.com/) with prompts that will most efficiently get you the desired results. Record the chat prompts used and output given. Evaluate the output. Do you fully understand the code generated? How can you tell that the generated code is correct?
+  Yes, it actually looked simpler than I thought. I can tell it is correct by the correct order implementation. I wrangled my data instead of using the built-in variables as it was more organized.
+
+```{r}
+month_lines <- weather |> 
+  filter(Day == 1)
+
+record_days <- weather |>
+  filter(High == RecordHigh) |>        
+  slice_max(RecordHigh, n = 5)
+
+
+month_names <- weather |> 
+  group_by(Month) |> 
+  summarize(middle_d = median(dateInYear))
+
+# Temperature plot
+
+temp_plot <- ggplot(weather) +
+  
+  geom_ribbon(aes(x= dateInYear, ymin = RecordLow, ymax = RecordHigh), fill = "#ECEBE3") + 
+  geom_vline(data = month_lines, aes(xintercept = dateInYear), color = "GRAY", linetype = "dotted", size = 0.1) +
+  geom_ribbon(aes(x= dateInYear, ymin = NormalLow, ymax = NormalHigh), fill = "#C8B8BA") + 
+  geom_linerange(aes(x= dateInYear, ymin = Low, ymax = High), color = "#A90248") +
+  
+  scale_x_continuous(breaks = month_names$middle_d, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +
+  scale_y_continuous(breaks = c(0, 40, 80, 120)) +
+  labs(title = "Temperature", x = NULL, y = NULL) +
+  
+  theme_classic() +
+  theme(plot.title = element_text(face = "bold", size = 10))
+temp_plot
+```
 
 
 ## Exercise 6 
@@ -195,7 +276,29 @@ Create a precipitation plot that looks like the following.  Note that
 
 
 ```{r weather_plot_precip}
+# Wrangling
+days <- weather |>
+  group_by(Month) |>
+  summarize(dateInYear = last(dateInYear), CulmPrec = last(CulmPrec), .groups = "drop")
 
+# Precipitation plot
+
+precip_plot <- weather |> 
+  ggplot(aes(x = dateInYear)) +
+  geom_vline(xintercept = days$dateInYear, color = "GRAY", linewidth = 0.15) +
+  geom_ribbon(aes(ymax = CulmPrec, ymin = 0, group = Month), fill = "#EBE0CC") + 
+  geom_line(aes(y = CulmPrec), color = "steelblue", linewidth = 0.8) + 
+  
+  geom_point(data = weather |> filter(RecordP == TRUE),
+             aes(x = dateInYear, y = CulmPrec),
+             shape = 25, fill = "BLACK", size = 1) +
+  
+  scale_y_continuous(breaks = c(4, 8), expand = c(0.2, 0)) +
+  labs(title = "Precipitation", x = "dateInYear", y = "CulmPrec") +
+  theme_classic() + 
+  theme(plot.title = element_text(face = "bold", size = 10))
+
+precip_plot
 ```
 ## Done!
 

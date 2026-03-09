@@ -246,10 +246,10 @@ ggplot() +
 Look up the `scale_color_viridis_c()` documentation via the [ggplot2 reference](https://ggplot2.tidyverse.org/reference/scale_viridis.html).
 
 - Read the function description at the top. What is the advantage of using this function for making color palettes?
-- They are uniform in both color and black and white.
-- It allows for effective and accessible data viz. The colors are color-blind friendly.
+  - They are uniform in both color and black and white.
+  - It allows for effective and accessible data viz. The colors are color-blind friendly.
 - Look through the examples section. What is the difference between the `_d()`, `_c()`, and `_b()` variants of this function?
-- d is for discrete (categorical), c is for continuous (numerical), and b is for binned.
+  - d is for discrete (categorical), c is for continuous (numerical), and b is for binned.
 
 
 
@@ -319,22 +319,33 @@ In the plot below, we add a layer for water information and a `coord_sf()` layer
 ```{r elevation_map_zoom_in}
 ggplot() +
     geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) + 
-    geom_sf(data = mn_counties, fill = NA, color = "black") + # county boundary layer
-    geom_sf(data = mn_water, fill = "lightsteelblue1", color = "lightsteelblue1") + # NEW: river/lake layer
-    geom_sf(data = mn_cities |> filter(Population >= 10000), mapping = aes(color = Population, size = Population)) + # cities layer
-    scale_color_viridis_c(option = "magma") + # continuous (gradient) color scale
-    scale_fill_gradient(low = "darkgreen", high = "white") + # continuous (gradient) fill scale
-    coord_sf(xlim = seven_countyarea[c("xmin", "xmax")], ylim = seven_countyarea[c("ymin", "ymax")]) + # NEW: crop map to Twin Cities bounding box
+    geom_sf(data = mn_counties, fill = NA, color = "black") + 
+    geom_sf(data = mn_water, fill = "lightsteelblue1", color = "lightsteelblue1") +
+    geom_sf(data = mn_cities |> filter(Population >= 10000), mapping = aes(color = Population, size = Population)) +
+    scale_color_viridis_c(option = "magma") + 
+    scale_fill_gradient(low = "darkgreen", high = "white") + 
+    coord_sf(xlim = seven_countyarea[c("xmin", "xmax")], ylim = seven_countyarea[c("ymin", "ymax")]) 
     labs(title = "Twin Cities with Population >= 10,000") + 
     ggthemes::theme_map() +
-    theme(legend.position = "none") # remove legend
+    theme(legend.position = "none")  
 ```
 
 Let's add to the above code chunk to save the map above to an image file called `tc_map_zoom.png` in the `figures` folder. The code example below shows a general template for saving a plot to file. Choose a reasonable width and height. (There are also `jpeg()` and `pdf()` functions for writing images.)
 
 ```{r save_plot_example, eval=FALSE}
-png("relative path to image", width = width_in_pixels, height = height_in_pixels)
+png("../figures/tc_map_zoom.png", width = 600, height = 400)
 # Code for creating plot
+ggplot() +
+    geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) + 
+    geom_sf(data = mn_counties, fill = NA, color = "black") + 
+    geom_sf(data = mn_water, fill = "lightsteelblue1", color = "lightsteelblue1") +
+    geom_sf(data = mn_cities |> filter(Population >= 10000), mapping = aes(color = Population, size = Population)) +
+    scale_color_viridis_c(option = "magma") + 
+    scale_fill_gradient(low = "darkgreen", high = "white") + 
+    coord_sf(xlim = seven_countyarea[c("xmin", "xmax")], ylim = seven_countyarea[c("ymin", "ymax")]) 
+    labs(title = "Twin Cities with Population >= 10,000") + 
+    ggthemes::theme_map() +
+    theme(legend.position = "none")
 dev.off()
 ```
 
