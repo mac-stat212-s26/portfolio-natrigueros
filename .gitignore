@@ -70,3 +70,4 @@ _freeze/
 *.log
 *.aux
 *.toc
+ica/03-adv-ggplot-notes.qmd
